@@ -1,23 +1,28 @@
-import logo from './logo.svg';
-import './App.css';
+import "semantic-ui-css/semantic.min.css";
+import "./App.css";
+
+import { useMemo, useState } from "react";
+
+import PlayerSelection from "./components/player-selection";
+import Dashboard from "./components/dashboard";
+import { MONOPOLY_STORAGE_KEY } from "./constants/globals";
 
 function App() {
+  const dataFromSessionStorage = useMemo(
+    () => window.localStorage.getItem(MONOPOLY_STORAGE_KEY),
+    []
+  );
+  const [data, setData] = useState(null);
+
+  const hasData = data || dataFromSessionStorage;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-board">
+      {hasData ? (
+        <Dashboard initData={data} sessionData={dataFromSessionStorage} />
+      ) : (
+        <PlayerSelection onSubmit={setData} />
+      )}
     </div>
   );
 }
