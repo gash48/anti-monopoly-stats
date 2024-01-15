@@ -33,7 +33,8 @@ const Operations = ({ players, renderContent }) => {
     if (action) {
       setAction(null);
     }
-  }, [player, action]);
+    // eslint-disable-next-line
+  }, [player]);
 
   const contentData = { id: player, type: action, resetOperation };
 
