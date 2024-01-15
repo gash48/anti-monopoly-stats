@@ -12,8 +12,6 @@ import {
   Button,
   Label,
   Segment,
-  Message,
-  MessageHeader,
 } from "semantic-ui-react";
 import {
   PLAYERS,
@@ -23,6 +21,7 @@ import {
   ROLE_NAMES,
 } from "../../constants/player";
 import { INITAL_PLAYER_MONEY } from "../../constants/globals";
+import MoneyDistribution from "./money-distribution";
 
 const PlayerSelection = ({ onSubmit }) => {
   const [roles, setRoles] = useState({});
@@ -60,9 +59,7 @@ const PlayerSelection = ({ onSubmit }) => {
         <Header as="h2" textAlign="center">
           Welcome to Anti-Monopoly Stats Board
         </Header>
-        <Message>
-          <MessageHeader>MONEY DISTRIBUTION</MessageHeader>
-        </Message>
+        <MoneyDistribution />
         <Header as="h4" textAlign="center">
           Select Roles
         </Header>
@@ -81,14 +78,14 @@ const PlayerSelection = ({ onSubmit }) => {
               <TableRow key={id}>
                 <TableCell>{name}</TableCell>
                 <TableCell className="role-cell">
-                  <Label horizontal>{ROLE_NAMES[1]}</Label>
+                  <Label horizontal>{ROLE_NAMES[1].name}</Label>
                   <Checkbox
                     id={id}
                     toggle
                     checked={roles[id]}
                     onChange={handleRoleChange}
                   />
-                  <Label horizontal>{ROLE_NAMES[2]}</Label>
+                  <Label horizontal>{ROLE_NAMES[2].name}</Label>
                 </TableCell>
                 <TableCell>{INITAL_PLAYER_MONEY}</TableCell>
               </TableRow>

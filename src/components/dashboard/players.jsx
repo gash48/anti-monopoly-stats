@@ -27,7 +27,7 @@ const Players = ({ players, playersCash, treasurer }) => {
             <Statistic size="small" color={color}>
               <StatisticValue>${playersCash[id].balance}</StatisticValue>
               <StatisticLabel>{name}</StatisticLabel>
-              <StatisticLabel>{ROLE_NAMES[role]}</StatisticLabel>
+              <StatisticLabel>{ROLE_NAMES[role].name}</StatisticLabel>
             </Statistic>
           </GridColumn>
         ))}

@@ -13,17 +13,16 @@ import {
 import { PLAYER_ACTION_TYPES as TYPES } from "../../store/types";
 import { ASSETS, ASSET_TYPE, CITIES } from "../../constants/assets";
 import {
-  checkIfApartment,
   computeNetBalance,
   computeNetRentValue,
-  getAllowedHousesLimit,
   getAntiMonopolyFoundationAmount,
-  getPrisonOrPriceWar,
+  getLockedLabel,
 } from "../../helpers/player";
+import { getAllowedHousesLimit, checkIfApartment } from "../../helpers/asset";
 import { isHouseProperty } from "../../helpers/asset";
 import { ROLES } from "../../constants/player";
 import {
-  ANTI_MONOPOLY_FOUNDATION_COUNT_OPTIONS,
+  ANTI_MONOPOLY_COMPETITOR_REWARDS,
   ASSET_WORTH_MULTIPLIER,
   MAX_INCOME_TAX,
   MONEY_FROM_START,
@@ -340,7 +339,7 @@ export const GetOutOfPrisonOrPriceWar = ({
   return (
     <Segment textAlign="center" vertical>
       <Button type="button" positive size="huge" onClick={onClick}>
-        Get Out of {getPrisonOrPriceWar(role)}
+        Get Out of {getLockedLabel(role)}
       </Button>
     </Segment>
   );
@@ -381,18 +380,20 @@ export const AntiMonopolyFoundation = ({
       case COMPETITOR:
         return (
           <Form onSubmit={onSubmit}>
-            <FormGroup inline>
+            <FormGroup inline className="jcenter">
               <label>Count</label>
-              {ANTI_MONOPOLY_FOUNDATION_COUNT_OPTIONS.map(({ id, name }) => (
-                <FormRadio
-                  key={`count-${id}`}
-                  name="count"
-                  label={name}
-                  value={id}
-                  checked={id === count}
-                  onChange={handleChange}
-                />
-              ))}
+              {ANTI_MONOPOLY_COMPETITOR_REWARDS.countOptions.map(
+                ({ id, name }) => (
+                  <FormRadio
+                    key={`count-${id}`}
+                    name="count"
+                    label={name}
+                    value={id}
+                    checked={id === count}
+                    onChange={handleChange}
+                  />
+                )
+              )}
             </FormGroup>
             <FormButton disabled={!count}>Submit</FormButton>
           </Form>
@@ -579,9 +580,11 @@ export const MortgageProperty = ({
 
   const assetsOptions = useMemo(
     () =>
-      Object.values(assets).map(({ id, name, cityId, type }) => ({
+      Object.values(assets).map(({ id, cityId, type }) => ({
         key: id,
-        text: isHouseProperty(type) ? `${CITIES[cityId].name} - ${name}` : name,
+        text: isHouseProperty(type)
+          ? `${CITIES[cityId].name} - ${ASSETS[id].name}`
+          : ASSETS[id].name,
         value: id,
       })),
     [assets]
@@ -617,102 +620,52 @@ export const RedeemProperty = ({
   resetOperation,
 }) => {
   const [propertyId, setPropertyId] = useState(null);
-  const [count, setCount] = useState(0);
 
-  const { treasurer, players, playersAssets } = state;
-  const { properties, mortgages } = treasurer;
-
-  const selectedAsset = ASSETS[propertyId];
-  const assetOwnerId = properties[propertyId];
-  const ownerRole = players[assetOwnerId]?.role;
+  const { treasurer } = state;
+  const { mortgages } = treasurer;
 
   const assetsOptions = useMemo(
     () =>
-      Object.keys(mortgages)
-        .filter((assetId) => {
-          const ownerId = properties[assetId];
-          return ownerId !== playerId;
-        })
-        .map((assetId) => {
-          const { type, cityId, name } = ASSETS[assetId];
-          return {
-            key: assetId,
-            text: isHouseProperty(type)
-              ? `${CITIES[cityId].name} - ${name}`
-              : name,
-            value: assetId,
-          };
-        }),
-    [properties, mortgages, playerId]
+      Object.keys(mortgages).map((assetId) => {
+        const { type, cityId, name } = ASSETS[assetId];
+        return {
+          key: assetId,
+          text: isHouseProperty(type)
+            ? `${CITIES[cityId].name} - ${name}`
+            : name,
+          value: assetId,
+        };
+      }),
+    [mortgages]
   );
 
   const onPropertyChange = (_, { value }) => {
     setPropertyId(value);
   };
 
-  const onCountChange = (_, { value }) => {
-    setCount(parseInt(value));
-  };
-
-  const rentToPay = useMemo(
-    () =>
-      assetOwnerId && propertyId
-        ? computeNetRentValue({
-            role: ownerRole,
-            assetId: propertyId,
-            assets: playersAssets[assetOwnerId].assets,
-            count,
-          })
-        : 0,
-    [assetOwnerId, playersAssets, propertyId, ownerRole, count]
-  );
-
   const onSubmit = () => {
     dispatch({
-      type: TYPES.PAY_RENT,
+      type: TYPES.REDEEM,
       payload: {
         playerId,
         assetId: propertyId,
-        ownerId: assetOwnerId,
-        rentToPay,
       },
     });
     resetOperation();
   };
 
-  const isUtilityType = selectedAsset?.type === ASSET_TYPE.UTILITY;
-
-  const formEnabled = isUtilityType ? propertyId && count > 0 : propertyId;
-
   return (
     <Segment textAlign="center" vertical>
       <Form onSubmit={onSubmit}>
-        <FormGroup widths="equal">
-          <FormSelect
-            fluid
-            label="Choose Property"
-            options={assetsOptions}
-            placeholder="Property"
-            value={propertyId}
-            onChange={onPropertyChange}
-          />
-          {isUtilityType && (
-            <FormInput
-              fluid
-              type="number"
-              label="Enter Count"
-              value={count}
-              placeholder="Count"
-              onChange={onCountChange}
-            />
-          )}
-        </FormGroup>
-        {formEnabled && (
-          <Message>
-            Rent To Pay: <b>${rentToPay}</b>
-          </Message>
-        )}
-        <FormButton disabled={!formEnabled}>Submit</FormButton>
+        <FormSelect
+          fluid
+          label="Choose Property"
+          options={assetsOptions}
+          placeholder="Property"
+          value={propertyId}
+          onChange={onPropertyChange}
+        />
+        <FormButton disabled={!propertyId}>Submit</FormButton>
       </Form>
     </Segment>
   );

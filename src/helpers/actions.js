@@ -1,9 +1,9 @@
 import { ASSETS } from "../constants/assets";
 import { MORTGAGE_VALUE_MULTIPLIER } from "../constants/globals";
 import { PLAYER_ACTION_TYPES as TYPES } from "../store/types";
-import { getPrisonOrPriceWar, isCompetitor } from "./player";
+import { getLockedLabel, isCompetitor } from "./player";
 
-export const createLog = (state, action, message) => {
+const createLog = (state, action, message) => {
   const { gameLogs, playerLogs } = state;
   const { playerId } = action.payload;
 
@@ -14,7 +14,7 @@ export const createLog = (state, action, message) => {
     playerId,
     message,
   };
-  gameLogs.push(logData);
+  gameLogs.unshift(logData);
   if (playerId in playerLogs) {
     playerLogs[playerId].push(logId);
   } else {
@@ -114,7 +114,8 @@ export const ACTION_OPERATION_MAPPING = {
     treasurer.noOfHouses += houses || 0;
     treasurer.noOfApartments += isApartment ? 1 : 0;
     treasurer.mortgages[assetId] = playerId;
-    playersAssets[playerId].mortgages.push(assetId);
+    delete treasurer.properties[assetId];
+    playersAssets[playerId].mortgages[assetId] = mortgagedBalance;
     delete playersAssets[playerId].assets[assetId];
 
     createLog(
@@ -129,7 +130,64 @@ export const ACTION_OPERATION_MAPPING = {
 
     return state;
   },
-  [TYPES.REDEEM]: null,
+  [TYPES.REDEEM]: (state, action) => {
+    const { playersCash, playersAssets, treasurer, players } = state;
+    const { type, payload } = action;
+    const { playerId, assetId } = payload;
+    const {
+      redeemPrice,
+      costPrice,
+      type: assetType,
+      cityId,
+      name: pName,
+    } = ASSETS[assetId];
+    const { mortgages, name: tName } = treasurer;
+    const propertyOwnerId = mortgages[assetId];
+    const { name: oName } = players[propertyOwnerId];
+    const { name } = players[playerId];
+
+    const isSelfRedeemed = playerId === propertyOwnerId;
+
+    const redemptionAmount = isSelfRedeemed
+      ? redeemPrice
+      : redeemPrice + costPrice;
+
+    treasurer.balance += redeemPrice;
+    treasurer.properties[assetId] = playerId;
+    delete mortgages[assetId];
+
+    delete playersAssets[propertyOwnerId].mortgages[assetId];
+    playersAssets[playerId].assets[assetId] = {
+      id: assetId,
+      type: assetType,
+      cityId,
+      houses: 0,
+      buyingPrice: costPrice,
+      isApartment: false,
+    };
+
+    if (isSelfRedeemed) {
+      playersCash[propertyOwnerId].balance -= redeemPrice;
+    } else {
+      playersCash[propertyOwnerId].balance += costPrice;
+      playersCash[playerId].balance -= redeemPrice + costPrice;
+    }
+
+    createLog(
+      state,
+      action,
+      ACTION_LOG_MESSAGE_MAPPING[type]?.({
+        isSelfRedeemed,
+        name,
+        pName,
+        price: redemptionAmount,
+        tName,
+        oName,
+      })
+    );
+
+    return state;
+  },
   [TYPES.PAY_INCOME_TAX]: (state, action) => {
     const { playersCash, treasurer, players } = state;
     const { type, payload } = action;
@@ -226,7 +284,7 @@ export const ACTION_OPERATION_MAPPING = {
         name,
         tName: treasurer.name,
         moneyToGetOut,
-        place: getPrisonOrPriceWar(role),
+        place: getLockedLabel(role),
       })
     );
 
@@ -312,10 +370,9 @@ export const ACTION_LOG_MESSAGE_MAPPING = {
   [TYPES.COLLECT_FROM_START]: ({ name, moneyToAdd, tName }) =>
     `${name} collected $${moneyToAdd} from the ${tName}.`,
   [TYPES.BUY_PROPERTY]: ({ name, pName, price, tName }) =>
-    `${name} purchased ${pName} with total value ${price} from the ${tName}.`,
+    `${name} purchased ${pName} with total value $${price} from the ${tName}.`,
   [TYPES.PAY_RENT]: ({ name, rent, oName, pName }) =>
     `${name} paid $${rent} to ${oName} for ${pName}.`,
-  [TYPES.REDEEM]: null,
   [TYPES.PAY_INCOME_TAX]: ({ name, taxToPay, tName }) =>
     `${name} paid $${taxToPay} to the ${tName} as Income Tax.`,
   [TYPES.PAY_TO]: ({ name, amount, toName }) =>
@@ -341,4 +398,8 @@ export const ACTION_LOG_MESSAGE_MAPPING = {
     `${name} added ${houses} houses on ${pName} for $${price} from the ${tName}.`,
   [TYPES.MORTGAGE]: ({ name, balance, pName }) =>
     `${name} mortgaged ${pName} at a price of $${balance}.`,
+  [TYPES.REDEEM]: ({ isSelfRedeemed, name, pName, price, tName, oName }) =>
+    isSelfRedeemed
+      ? `${name} self redeemed ${pName} at a price of $${price} from the ${tName}`
+      : `${name} redeemed the ${pName} owned by ${oName} at a total price of $${price}`,
 };

@@ -11,6 +11,7 @@ import {
   IncomeTax,
   AddHouse,
   MortgageProperty,
+  RedeemProperty,
 } from "../components/dashboard/actions";
 
 export const ACTION_NAME_MAPPING = {
@@ -33,7 +34,7 @@ export const ACTION_COMPONENT_MAPPING = {
   [TYPES.BUY_PROPERTY]: BuyProperty,
   [TYPES.PAY_RENT]: PayRent,
   [TYPES.MORTGAGE]: MortgageProperty,
-  [TYPES.REDEEM]: null,
+  [TYPES.REDEEM]: RedeemProperty,
   [TYPES.PAY_INCOME_TAX]: IncomeTax,
   [TYPES.PAY_TO]: PayOrReceiveMoney,
   [TYPES.RECEIVE_FROM]: PayOrReceiveMoney,
