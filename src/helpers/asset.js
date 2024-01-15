@@ -3,6 +3,8 @@ import { ROLE_HOUSES_LIMIT } from "../constants/player";
 
 export const isHouseProperty = (type) => type === ASSET_TYPE.PROPERTY;
 
+export const isUtilityProperty = (type) => type === ASSET_TYPE.UTILITY;
+
 export const getAllowedHousesLimit = (role) => ROLE_HOUSES_LIMIT[role];
 
 export const checkIfApartment = (role, houses) =>
