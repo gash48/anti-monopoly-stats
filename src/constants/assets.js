@@ -6,6 +6,12 @@ export const ASSET_TYPE = {
   TRANSPORT: 3,
 };
 
+export const ASSET_TYPE_NAMES = {
+  [ASSET_TYPE.PROPERTY]: "PROPERTY",
+  [ASSET_TYPE.UTILITY]: "UTILITY",
+  [ASSET_TYPE.TRANSPORT]: "TRANSPORT",
+};
+
 export const CITIES = {
   1: {
     id: 1,

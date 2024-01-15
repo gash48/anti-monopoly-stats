@@ -7,9 +7,12 @@ import {
   ListContent,
   Label,
 } from "semantic-ui-react";
+import ShowAllAssets from "./modals.jsx/all-assets";
+import ShowAllMortgages from "./modals.jsx/all-mortgages";
 
 const Treasurer = ({ data }) => {
-  const { id, mortgages, noOfHouses, noOfApartments, noOfAssets } = data;
+  const { id, properties, mortgages, noOfHouses, noOfApartments, noOfAssets } =
+    data;
 
   const mortgagedProperties = Object.keys(mortgages).length;
 
@@ -22,16 +25,27 @@ const Treasurer = ({ data }) => {
       <List>
         <ListItem>
           <ListContent>
-            <Label>
-              <span>Assets Owned:</span> {noOfAssets}
-            </Label>
+            <ShowAllAssets
+              trigger={
+                <Label as="a">
+                  <span>Assets Owned:</span> {noOfAssets}
+                </Label>
+              }
+              properties={properties}
+            />
           </ListContent>
         </ListItem>
         <ListItem>
           <ListContent>
-            <Label>
-              <span>Mortgaged:</span> {mortgagedProperties}
-            </Label>
+            <ShowAllMortgages
+              trigger={
+                <Label as="a">
+                  <span>Mortgaged:</span> {mortgagedProperties}
+                </Label>
+              }
+              mortgages={mortgages}
+              mortgagedProperties={mortgagedProperties}
+            />
           </ListContent>
         </ListItem>
         <ListItem>
