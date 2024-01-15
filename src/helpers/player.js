@@ -1,20 +1,11 @@
 import { ASSETS, ASSET_TYPE } from "../constants/assets";
 import {
-  ALLOWED_COMPETITOR_HOUSES,
-  ALLOWED_MONOPOLIST_HOUSES,
   ANTI_MONOPOLY_COMPETITOR_REWARDS,
+  ANTI_MONOPOLY_MONOPOLIST_REWARD,
   MORTGAGE_VALUE_MULTIPLIER,
 } from "../constants/globals";
-import { ROLES } from "../constants/player";
-
-export const getRandomColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
+import { ROLES, ROLE_NAMES } from "../constants/player";
+import { getOwnedTransportCompanies, getOwnedUtilityCompanies } from "./asset";
 
 export const isCompetitor = (role) => role === ROLES.COMPETITOR;
 
@@ -59,26 +50,14 @@ export const computeNetRentValue = ({ role, assetId, assets, count }) => {
   return 0;
 };
 
-export const checkIfApartment = (role, houses) =>
-  houses === getAllowedHousesLimit(role);
+export const getLockedLabel = (role) => ROLE_NAMES[role].lockedName;
 
-export const getAllowedHousesLimit = (role) =>
-  isCompetitor(role) ? ALLOWED_COMPETITOR_HOUSES : ALLOWED_MONOPOLIST_HOUSES;
+export const getAntiMonopolyFoundationAmount = (role, count) => {
+  const { eligibleCounts, multiplier } = ANTI_MONOPOLY_COMPETITOR_REWARDS;
 
-export const getOwnedTransportCompanies = (assets) =>
-  Object.values(assets).filter(({ type }) => type === ASSET_TYPE.TRANSPORT)
-    .length;
-
-export const getOwnedUtilityCompanies = (assets) =>
-  Object.values(assets).filter(({ type }) => type === ASSET_TYPE.UTILITY)
-    .length;
-
-export const getPrisonOrPriceWar = (role) =>
-  isCompetitor(role) ? "Price War" : "Prison";
-
-export const getAntiMonopolyFoundationAmount = (role, count) =>
-  isCompetitor(role)
-    ? ANTI_MONOPOLY_COMPETITOR_REWARDS.includes(count)
-      ? count * 25
+  return isCompetitor(role)
+    ? eligibleCounts.includes(count)
+      ? count * multiplier
       : 0
-    : -160;
+    : ANTI_MONOPOLY_MONOPOLIST_REWARD;
+};

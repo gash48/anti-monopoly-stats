@@ -12,7 +12,8 @@ import Operations from "./operations";
 import { ACTION_COMPONENT_MAPPING } from "../../constants/actions";
 import useReducerWithLogger from "../../helpers/reducer";
 import GameLogs from "./logs";
-import { Segment, Button } from "semantic-ui-react";
+import { Segment } from "semantic-ui-react";
+import ExitGame from "./exit";
 
 const Dashboard = ({ initData, sessionData }) => {
   const [state, dispatch] = useReducerWithLogger(
@@ -35,9 +36,7 @@ const Dashboard = ({ initData, sessionData }) => {
 
       dispatch({ type: GAME_ACTION_TYPES.INIT, payload });
     }
-  }, []);
-
-  const onExit = () => dispatch({ type: GAME_ACTION_TYPES.RESET_DATA });
+  }, [dispatch, initData]);
 
   const renderContent = ({ id, type, resetOperation }) => {
     if (!id || !type) {
@@ -81,10 +80,8 @@ const Dashboard = ({ initData, sessionData }) => {
           <GameLogs gameLogs={gameLogs} dispatch={dispatch} />
         )}
       </div>
-      <Segment>
-        <Button fluid onClick={onExit}>
-          Exit Game
-        </Button>
+      <Segment className="game-exit-segment">
+        <ExitGame dispatch={dispatch} />
       </Segment>
     </>
   );

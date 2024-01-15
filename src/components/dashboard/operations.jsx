@@ -33,7 +33,7 @@ const Operations = ({ players, renderContent }) => {
     if (action) {
       setAction(null);
     }
-  }, [player]);
+  }, [player, action]);
 
   const contentData = { id: player, type: action, resetOperation };
 

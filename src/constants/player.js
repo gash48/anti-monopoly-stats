@@ -6,8 +6,13 @@ export const ROLES = {
 };
 
 export const ROLE_NAMES = {
-  1: "COMPETITOR",
-  2: "MONOPOLIST",
+  [ROLES.COMPETITOR]: { name: "COMPETITOR", lockedName: "PRICE WAR" },
+  [ROLES.MONOPOLIST]: { name: "MONOPOLIST", lockedName: "PRISON" },
+};
+
+export const ROLE_HOUSES_LIMIT = {
+  [ROLES.COMPETITOR]: 5,
+  [ROLES.MONOPOLIST]: 4,
 };
 
 export const PLAYERS = {
@@ -43,5 +48,5 @@ export const PLAYER_CASH = () => ({
 
 export const PLAYER_ASSETS = () => ({
   assets: {},
-  mortgages: [],
+  mortgages: {},
 });
